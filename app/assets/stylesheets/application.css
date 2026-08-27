@@ -1,0 +1,84 @@
+/*
+ * App chrome variables (Tailwind utilities come from builds/tailwind.css).
+ */
+:root {
+  --ledger-bg: #f3efe6;
+  --ledger-panel: #fffdf8;
+  --ledger-ink: #1c2a22;
+  --ledger-muted: #5c6b62;
+  --ledger-line: #d7d0c3;
+  --ledger-accent: #0f6b4c;
+  --ledger-accent-dark: #0a4f39;
+  --ledger-warn: #8a5a12;
+}
+
+.docs-prose {
+  line-height: 1.65;
+  color: var(--ledger-ink);
+}
+.docs-prose > * + * {
+  margin-top: 1rem;
+}
+.docs-prose h1,
+.docs-prose h2,
+.docs-prose h3 {
+  font-family: "IBM Plex Serif", Georgia, serif;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin-top: 2rem;
+}
+.docs-prose h1 { font-size: 1.75rem; }
+.docs-prose h2 { font-size: 1.35rem; }
+.docs-prose h3 { font-size: 1.15rem; }
+.docs-prose a {
+  color: var(--ledger-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.docs-prose code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.875em;
+  background: var(--ledger-bg);
+  padding: 0.1rem 0.35rem;
+  border-radius: 0.25rem;
+}
+.docs-prose pre {
+  overflow-x: auto;
+  background: #1c2a22;
+  color: #f3efe6;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+.docs-prose pre code {
+  background: transparent;
+  padding: 0;
+  color: inherit;
+}
+.docs-prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+.docs-prose th,
+.docs-prose td {
+  border: 1px solid var(--ledger-line);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  vertical-align: top;
+}
+.docs-prose th {
+  background: var(--ledger-bg);
+}
+.docs-prose ul,
+.docs-prose ol {
+  padding-left: 1.25rem;
+}
+.docs-prose ul { list-style: disc; }
+.docs-prose ol { list-style: decimal; }
+.docs-prose blockquote {
+  border-left: 3px solid var(--ledger-accent);
+  padding-left: 1rem;
+  color: var(--ledger-muted);
+}

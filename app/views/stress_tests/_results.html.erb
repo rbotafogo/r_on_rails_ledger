@@ -1,0 +1,125 @@
+<div id="stress_test_results" class="space-y-6 rounded-xl border border-[var(--ledger-line)] bg-[var(--ledger-panel)] p-6 shadow-sm">
+  <% if stress_test.nil? %>
+    <p class="text-[var(--ledger-muted)]">
+      Ready. Run a stress test to execute <strong>Engine A (historical)</strong> and
+      <strong>Engine B (Monte Carlo)</strong> via Galaaz → GNU R.
+    </p>
+  <% elsif stress_test.pending? || stress_test.calculating? %>
+    <p class="text-[var(--ledger-ink)]">
+      Status: <span class="font-semibold"><%= stress_test.status %></span>
+      — dual engines running (historical VaR + forward Monte Carlo)…
+    </p>
+  <% elsif stress_test.failed? && stress_test.historical_run.nil? && stress_test.monte_carlo_run.nil? %>
+    <p class="text-red-800">Failed: <%= stress_test.error_message %></p>
+  <% else %>
+    <% hist = stress_test.historical_run %>
+    <% mc = stress_test.monte_carlo_run %>
+    <% hp = hist&.payload.is_a?(Hash) ? hist.payload : {} %>
+    <% mp = mc&.payload.is_a?(Hash) ? mc.payload : {} %>
+    <% runtime = stress_test.chart_payload.is_a?(Hash) ? (stress_test.chart_payload["runtime"] || {}) : {} %>
+
+    <% if runtime["notice"].present? %>
+      <div class="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+        <p class="font-semibold">Runtime notice</p>
+        <p class="mt-1"><%= runtime["notice"] %></p>
+        <% if runtime["mode"].to_s.include?("local") || runtime["preferred"] == "docker" %>
+          <p class="mt-2 font-mono text-xs">bin/setup_docker_r_engines</p>
+        <% end %>
+      </div>
+    <% elsif runtime["mode"] == "docker" %>
+      <div class="rounded-lg border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm text-emerald-950">
+        <strong>Docker dual-R</strong> (concurrent):
+        Engine A on R <%= runtime["historical_r"] || runtime["historical_target"] %>
+        · Engine B on R <%= runtime["monte_carlo_r"] || runtime["monte_carlo_target"] %>
+        · wall <%= stress_test.wall_elapsed_ms || stress_test.elapsed_ms %> ms
+      </div>
+    <% elsif runtime["mode"] == "local" %>
+      <div class="rounded-lg border border-sky-300 bg-sky-50 px-4 py-3 text-sm text-sky-950">
+        <strong>Local R</strong> (concurrent — two host R processes) · wall <%= stress_test.wall_elapsed_ms || stress_test.elapsed_ms %> ms
+        (A <%= stress_test.historical_elapsed_ms || "—" %> ms · B <%= stress_test.monte_carlo_elapsed_ms || "—" %> ms)
+      </div>
+    <% end %>
+
+    <div>
+      <h3 class="text-lg font-semibold" style="font-family: 'IBM Plex Serif', Georgia, serif;">Side-by-side risk KPIs</h3>
+      <p class="mt-1 text-xs text-[var(--ledger-muted)]">
+        Engine A is <strong>1-day historical</strong> VaR
+        <%= hp["r_version_label"] ? "(R #{hp['r_version_label']})" : "" %>.
+        Engine B is <strong><%= mp["horizon_days"] || 30 %>-day forward</strong> Monte Carlo
+        <%= mp["r_version_label"] ? "(R #{mp['r_version_label']})" : "" %> —
+        horizons differ on purpose; compare directionally, not as identical metrics.
+      </p>
+    </div>
+
+    <div class="overflow-x-auto rounded-lg border border-[var(--ledger-line)]">
+      <table class="min-w-full text-left text-sm">
+        <thead class="bg-[var(--ledger-bg)] text-[var(--ledger-muted)]">
+          <tr>
+            <th class="px-3 py-2 font-medium">Metric</th>
+            <th class="px-3 py-2 font-medium">Engine A (Historical)</th>
+            <th class="px-3 py-2 font-medium">Engine B (Monte Carlo)</th>
+            <th class="px-3 py-2 font-medium">Notes</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-[var(--ledger-line)]">
+          <tr>
+            <td class="px-3 py-2 font-medium">95% VaR</td>
+            <td class="px-3 py-2"><%= hist&.completed? ? number_to_percentage(hist.var_95.to_f * 100, precision: 2) : (hist&.error_message || "—") %></td>
+            <td class="px-3 py-2"><%= mc&.completed? ? number_to_percentage(mc.sim_var_30d.to_f * 100, precision: 2) : (mc&.error_message || "—") %></td>
+            <td class="px-3 py-2 text-[var(--ledger-muted)]">1-day vs <%= mp["horizon_days"] || 30 %>-day</td>
+          </tr>
+          <tr>
+            <td class="px-3 py-2 font-medium">99% VaR</td>
+            <td class="px-3 py-2"><%= hist&.completed? ? number_to_percentage(hist.var_99.to_f * 100, precision: 2) : "—" %></td>
+            <td class="px-3 py-2"><%= mc&.completed? ? number_to_percentage(mp["var_99"].to_f * 100, precision: 2) : "—" %></td>
+            <td class="px-3 py-2 text-[var(--ledger-muted)]">Fat-tail divergence</td>
+          </tr>
+          <tr>
+            <td class="px-3 py-2 font-medium">Expected Shortfall / MDD</td>
+            <td class="px-3 py-2"><%= hist&.completed? ? number_to_percentage(hist.expected_shortfall.to_f * 100, precision: 2) : "—" %></td>
+            <td class="px-3 py-2"><%= mc&.completed? ? number_to_percentage(mc.sim_expected_max_drawdown.to_f * 100, precision: 2) : "—" %></td>
+            <td class="px-3 py-2 text-[var(--ledger-muted)]">ES (A) vs mean max drawdown (B)</td>
+          </tr>
+          <tr>
+            <td class="px-3 py-2 font-medium">Tail P(ret &lt; −5%)</td>
+            <td class="px-3 py-2 text-[var(--ledger-muted)]">—</td>
+            <td class="px-3 py-2"><%= mc&.completed? ? number_to_percentage(mc.tail_risk_probability.to_f * 100, precision: 2) : "—" %></td>
+            <td class="px-3 py-2 text-[var(--ledger-muted)]">Monte Carlo only</td>
+          </tr>
+          <tr>
+            <td class="px-3 py-2 font-medium">Engine time</td>
+            <td class="px-3 py-2"><%= hist&.elapsed_ms ? "#{hist.elapsed_ms} ms" : "—" %></td>
+            <td class="px-3 py-2"><%= mc&.elapsed_ms ? "#{mc.elapsed_ms} ms" : "—" %></td>
+            <td class="px-3 py-2 text-[var(--ledger-muted)]">Wall <%= stress_test.wall_elapsed_ms || stress_test.elapsed_ms %> ms</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <% if hist&.failed? || mc&.failed? %>
+      <p class="text-sm text-amber-900">
+        Partial failure:
+        <%= [hist&.failed? && "A: #{hist.error_message}", mc&.failed? && "B: #{mc.error_message}"].compact.join(" · ") %>
+      </p>
+    <% end %>
+
+    <div
+      class="grid gap-6 lg:grid-cols-2"
+      data-controller="risk-dashboard"
+      data-risk-dashboard-payload-value="<%= ERB::Util.html_escape(stress_test.chart_payload.to_json) %>"
+    >
+      <div>
+        <h4 class="mb-2 text-sm font-semibold text-[var(--ledger-muted)]">Chart 1 · Density &amp; tail risk</h4>
+        <div data-risk-dashboard-target="density" class="h-72 w-full"></div>
+      </div>
+      <div>
+        <h4 class="mb-2 text-sm font-semibold text-[var(--ledger-muted)]">Chart 2 · 30-day Monte Carlo cone</h4>
+        <div data-risk-dashboard-target="cone" class="h-72 w-full"></div>
+      </div>
+      <div class="lg:col-span-2">
+        <h4 class="mb-2 text-sm font-semibold text-[var(--ledger-muted)]">Chart 3 · Rolling historical VaR &amp; breaches</h4>
+        <div data-risk-dashboard-target="rolling" class="h-72 w-full"></div>
+      </div>
+    </div>
+  <% end %>
+</div>

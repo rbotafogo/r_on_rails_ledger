@@ -1,0 +1,89 @@
+<% content_for :title, "#{@portfolio.name} — R-on-Rails Ledger" %>
+
+<div class="space-y-8">
+  <div class="flex flex-wrap items-start justify-between gap-4">
+    <header class="space-y-2">
+      <p class="text-sm font-medium uppercase tracking-[0.16em] text-[var(--ledger-muted)]">Portfolio ledger</p>
+      <h1 class="text-3xl font-semibold tracking-tight text-[var(--ledger-ink)] sm:text-4xl" style="font-family: 'IBM Plex Serif', Georgia, serif;">
+        <%= @portfolio.name %>
+      </h1>
+      <p class="text-[var(--ledger-muted)]">
+        <%= number_to_currency(@portfolio.total_value) %> ·
+        <%= @assets.size %> assets ·
+        <%= number_with_delimiter(@price_count) %> price bars
+      </p>
+    </header>
+    <%= link_to "← Home", root_path, class: "text-sm font-medium text-[var(--ledger-accent)] hover:underline" %>
+  </div>
+
+  <%= turbo_stream_from "portfolio_#{@portfolio.id}" %>
+
+  <section class="overflow-hidden rounded-xl border border-[var(--ledger-line)] bg-[var(--ledger-panel)]">
+    <div class="border-b border-[var(--ledger-line)] px-4 py-3 text-sm font-semibold text-[var(--ledger-muted)]">
+      Asset weights
+    </div>
+    <table class="min-w-full text-left text-sm">
+      <thead class="bg-[var(--ledger-bg)] text-[var(--ledger-muted)]">
+        <tr>
+          <th class="px-4 py-2 font-medium">Ticker</th>
+          <th class="px-4 py-2 font-medium">Weight</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @assets.each do |asset| %>
+          <tr class="border-t border-[var(--ledger-line)]">
+            <td class="px-4 py-2 font-mono"><%= asset.ticker %></td>
+            <td class="px-4 py-2"><%= number_to_percentage(asset.weight * 100, precision: 2) %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="space-y-4">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <h2 class="text-xl font-semibold" style="font-family: 'IBM Plex Serif', Georgia, serif;">Stress test</h2>
+        <p class="text-sm text-[var(--ledger-muted)]">
+          <strong>Local R</strong> — Arrow + Ruby DSL on the host Galaaz bridge.
+          <strong>Docker</strong> — concurrent R <%= Risk::DockerEngines::HIST_VERSION %> ∥ <%= Risk::DockerEngines::MC_VERSION %>.
+          See <%= link_to "Ruby DSL docs", doc_path("ruby-dsl"), class: "text-[var(--ledger-accent)] hover:underline" %>.
+        </p>
+      </div>
+    </div>
+
+    <%= form_with url: portfolio_stress_tests_path(@portfolio), method: :post, class: "space-y-4" do %>
+      <%= hidden_field_tag :inline, 1 %>
+
+      <fieldset class="rounded-xl border border-[var(--ledger-line)] bg-[var(--ledger-panel)] p-4">
+        <legend class="px-1 text-sm font-semibold text-[var(--ledger-ink)]">R runtime</legend>
+        <div class="mt-2 grid gap-3 sm:grid-cols-2">
+          <label class="flex cursor-pointer gap-3 rounded-lg border border-[var(--ledger-line)] p-3 has-[:checked]:border-[var(--ledger-accent)] has-[:checked]:bg-emerald-50/50">
+            <%= radio_button_tag :runtime, "local", @risk_runtime != "docker", class: "mt-1" %>
+            <span>
+              <span class="block font-semibold text-[var(--ledger-ink)]">Local R</span>
+              <span class="block text-xs text-[var(--ledger-muted)]">Fast — Arrow table + Ruby <code class="font-mono">R.*</code> DSL for historical VaR; GBM Monte Carlo in R.</span>
+            </span>
+          </label>
+          <label class="flex cursor-pointer gap-3 rounded-lg border border-[var(--ledger-line)] p-3 has-[:checked]:border-[var(--ledger-accent)] has-[:checked]:bg-emerald-50/50 <%= @docker_status.images_ready ? "" : "opacity-90" %>">
+            <%= radio_button_tag :runtime, "docker", @risk_runtime == "docker", class: "mt-1", disabled: !@docker_status.available %>
+            <span>
+              <span class="block font-semibold text-[var(--ledger-ink)]">Docker dual-R</span>
+              <span class="block text-xs text-[var(--ledger-muted)]">
+                Complete demo — Engine A on R <%= Risk::DockerEngines::HIST_VERSION %>, Engine B on R <%= Risk::DockerEngines::MC_VERSION %> (slower cold start).
+              </span>
+              <% unless @docker_status.images_ready %>
+                <span class="mt-1 block text-xs text-amber-800"><%= @docker_status.notice || "Run bin/setup_docker_r_engines first." %></span>
+              <% end %>
+            </span>
+          </label>
+        </div>
+      </fieldset>
+
+      <%= submit_tag "Run stress test",
+            class: "inline-flex cursor-pointer rounded-md bg-[var(--ledger-accent)] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[var(--ledger-accent-dark)]" %>
+    <% end %>
+
+    <%= render "stress_tests/results", stress_test: @stress_test %>
+  </section>
+</div>

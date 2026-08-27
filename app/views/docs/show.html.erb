@@ -1,0 +1,47 @@
+<% content_for :title, "#{@page.title} — Docs" %>
+
+<div class="grid gap-10 lg:grid-cols-[14rem_minmax(0,1fr)]">
+  <aside class="space-y-3 lg:sticky lg:top-6 lg:self-start">
+    <%= link_to "← All docs", docs_path, class: "text-sm font-medium text-[var(--ledger-accent)] hover:underline" %>
+    <nav class="hidden max-h-[70vh] space-y-1 overflow-y-auto text-sm lg:block">
+      <% Docs::Catalog.all.each do |page| %>
+        <%= link_to page.title, doc_path(page.slug),
+              class: "block rounded-md px-2 py-1.5 #{page.slug == @page.slug ? 'bg-[var(--ledger-accent)] text-white' : 'text-[var(--ledger-muted)] hover:bg-[var(--ledger-bg)] hover:text-[var(--ledger-ink)]'}" %>
+      <% end %>
+    </nav>
+  </aside>
+
+  <article class="min-w-0 space-y-10">
+    <header class="space-y-2 border-b border-[var(--ledger-line)] pb-6">
+      <p class="text-xs font-medium uppercase tracking-[0.16em] text-[var(--ledger-muted)]">docs/<%= @page.filename %></p>
+      <h1 class="text-3xl font-semibold tracking-tight sm:text-4xl" style="font-family: 'IBM Plex Serif', Georgia, serif;">
+        <%= @page.title %>
+      </h1>
+      <p class="text-[var(--ledger-muted)]"><%= @page.summary %></p>
+    </header>
+
+    <div class="docs-prose">
+      <%= raw @html %>
+    </div>
+
+    <% if @excerpts.any? %>
+      <section class="space-y-6 border-t border-[var(--ledger-line)] pt-10">
+        <div>
+          <h2 class="text-2xl font-semibold" style="font-family: 'IBM Plex Serif', Georgia, serif;">Live code from this app</h2>
+          <p class="mt-2 text-sm text-[var(--ledger-muted)]">
+            Excerpts are read from the files on disk when this page renders — not copy-pasted stubs.
+          </p>
+        </div>
+        <% @excerpts.each do |ex| %>
+          <div class="overflow-hidden rounded-xl border border-[var(--ledger-line)] bg-[#1c2a22] text-[#f3efe6] shadow-sm">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 px-4 py-2 text-xs">
+              <span class="font-semibold"><%= ex.title %></span>
+              <code class="font-mono text-white/70"><%= ex.path %></code>
+            </div>
+            <pre class="overflow-x-auto p-4 text-xs leading-relaxed sm:text-sm"><code><%= ex.code %></code></pre>
+          </div>
+        <% end %>
+      </section>
+    <% end %>
+  </article>
+</div>

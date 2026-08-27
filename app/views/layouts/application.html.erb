@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title><%= content_for(:title) || "R-on-Rails Ledger" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="R-on-Rails Ledger">
+    <meta name="mobile-web-app-capable" content="yes">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= yield :head %>
+
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/icon.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@600;700&display=swap" rel="stylesheet">
+
+    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" defer></script>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body class="min-h-screen bg-[var(--ledger-bg)] text-[var(--ledger-ink)] antialiased" style="font-family: 'IBM Plex Sans', system-ui, sans-serif;">
+    <header class="border-b border-[var(--ledger-line)] bg-[var(--ledger-panel)]/90 backdrop-blur">
+      <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-4">
+        <div>
+          <%= link_to root_path, class: "group block" do %>
+            <span class="block text-xs font-medium uppercase tracking-[0.18em] text-[var(--ledger-muted)]">OnRails family</span>
+            <span class="block text-xl font-semibold tracking-tight text-[var(--ledger-ink)] group-hover:text-[var(--ledger-accent)]" style="font-family: 'IBM Plex Serif', Georgia, serif;">
+              R-on-Rails Ledger
+            </span>
+          <% end %>
+        </div>
+        <nav class="flex flex-wrap items-center gap-2 text-sm">
+          <%= link_to "Home", root_path, class: "rounded-md px-3 py-1.5 text-[var(--ledger-ink)] hover:bg-[var(--ledger-bg)]" %>
+          <%= link_to "Docs", docs_path, class: "rounded-md px-3 py-1.5 text-[var(--ledger-ink)] hover:bg-[var(--ledger-bg)]" %>
+          <%= link_to "Ruby DSL", doc_path("ruby-dsl"), class: "rounded-md px-3 py-1.5 text-[var(--ledger-ink)] hover:bg-[var(--ledger-bg)]" %>
+          <% if (demo = Portfolio.order(:id).first) %>
+            <%= link_to "Open portfolio", portfolio_path(demo), class: "rounded-md bg-[var(--ledger-accent)] px-3 py-1.5 font-medium text-white hover:bg-[var(--ledger-accent-dark)]" %>
+          <% end %>
+        </nav>
+      </div>
+    </header>
+
+    <main class="mx-auto max-w-6xl px-5 py-10">
+      <%= yield %>
+    </main>
+
+    <footer class="border-t border-[var(--ledger-line)] bg-[var(--ledger-panel)]">
+      <div class="mx-auto flex max-w-6xl flex-col gap-2 px-5 py-6 text-sm text-[var(--ledger-muted)] sm:flex-row sm:items-center sm:justify-between">
+        <p>Rails 8 · CRuby · SQLite · Solid Queue · Hotwire · GNU R via Galaaz</p>
+        <p>Docs: browse in-app under <a class="underline hover:text-[var(--ledger-accent)]" href="/docs">/docs</a>
+          · source in <code class="rounded bg-[var(--ledger-bg)] px-1.5 py-0.5 font-mono text-xs">docs/</code></p>
+      </div>
+    </footer>
+  </body>
+</html>

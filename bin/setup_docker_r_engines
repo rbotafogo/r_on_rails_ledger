@@ -1,0 +1,27 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Build Docker images used by the dual-R demo:
+#   Engine A (historical) -> galaaz/r-bridge:3.6.3  (rocker/r-ver:3.6.3 + Rcpp)
+#   Engine B (Monte Carlo) -> galaaz/r-bridge:4.3.3 (rocker/r-ver:4.3.3 + Rcpp)
+#
+# Usage (from app root):
+#   bin/setup_docker_r_engines
+
+APP_PATH = File.expand_path("..", __dir__)
+Dir.chdir(APP_PATH)
+
+require_relative "../config/environment"
+
+unless Risk::DockerEngines.docker_ok?
+  warn "Docker is not available (docker info failed). Start Docker Desktop/daemon and retry."
+  exit 1
+end
+
+begin
+  Risk::DockerEngines.ensure_images!(out: $stdout)
+  puts "Done. Stress tests will use R #{Risk::DockerEngines::HIST_VERSION} + R #{Risk::DockerEngines::MC_VERSION}."
+rescue StandardError => e
+  warn e.message
+  exit 1
+end
