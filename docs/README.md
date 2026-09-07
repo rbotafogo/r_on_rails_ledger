@@ -24,7 +24,7 @@ driving concurrent GNU R engines for VaR / Monte Carlo style risk.
 
 1. [Getting started](getting_started.md) — machine setup, boot the app
 2. [Product scenario](product_scenario.md) — what we are building and why
-3. [Architecture](architecture.md) — Rails, Solid*, Galaaz, Arrow, multi-R (honest)
+3. [Architecture](architecture.md) — Rails, Solid*, Galaaz proxies, Arrow handoff (honest; no fake zero-copy)
 4. [Implementation plan](implementation_plan.md) — phased build checklist
 5. [Data and seeding](data_and_seeding.md) — 1M-row GBM / SQLite design
 6. [Engines and dashboard](engines_and_dashboard.md) — dual R engines, KPIs, Plotly

@@ -12,7 +12,8 @@ dashboard** (KPI cards + charts).
 Honest data path (see [architecture.md](architecture.md)):
 
 1. Job loads returns from SQLite (batched pluck / find_each — **not** `pluck_to_arrow`).
-2. One bulk handoff into R via real Galaaz APIs (`R::Arrow.from_ruby_batches` or Feather).
+2. One bulk handoff into R via **`Galaaz::ArrowIpc` + `R::Arrow.open_ipc`** (Stage B) or
+   `R::Arrow.from_ruby_batches` / `table_from` (Stage A), or Feather/RDS in Docker.
 3. Engine A / Engine B each compute and return **structured results** (hashes / arrays /
    JSON-serializable payloads Ruby can store and feed to the browser).
 4. Solid Cable + Turbo Stream replace the dashboard partial.
@@ -143,7 +144,7 @@ express as method calls — it is optional, not required for “elegance.”
 
 | Invented / misleading | Reality |
 |----------------------|---------|
-| `pluck_to_arrow` | Not in Rails/Galaaz; implement app helper or pluck → `R::Arrow.from_ruby_batches` |
+| `pluck_to_arrow` | Not in Rails/Galaaz; use `Risk::ReturnPanel.column_hash` + `Galaaz::ArrowIpc.write` |
 | `R.assign_arrow` | Not a public Galaaz API today |
 | `portfolio_data.daily_return` as a free Ruby local | Only works if you bind a Ruby handle to an R object (`R.portfolio_data` / assign patterns) |
 | “0-copy” | See architecture — bulk handoff, analytics in R |
@@ -162,11 +163,9 @@ class StressTestJob < ApplicationJob
     test = StressTest.find(stress_test_id)
     test.update!(status: "calculating")
 
-    panel = Risk::ReturnPanel.from_portfolio(test.portfolio) # pluck → columns
-    r_table = R::Arrow.from_ruby_batches([panel.to_column_hash])
-
-    # Phase 1: one engine. Phase 2: EngineA.call(r_table) || EngineB.call(r_table)
-    result = Risk::HistoricalEngine.call(r_table)
+    rows = Risk::ReturnPanel.from_portfolio(test.portfolio)
+    # Arrow IPC / table_from happens inside HistoricalEngine → ArrowHandoff
+    result = Risk::HistoricalEngine.call(rows)
 
     test.update!(status: "completed", **result.metrics)
     Turbo::StreamsChannel.broadcast_replace_to(

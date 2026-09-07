@@ -1,7 +1,7 @@
 PATH
   remote: ../galaaz
   specs:
-    galaaz (2.0.0)
+    galaaz (2.1.0)
       msgpack (~> 1.0)
 
 GEM

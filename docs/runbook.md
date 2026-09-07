@@ -59,7 +59,7 @@ Timed for a live click-through. Keep the browser on the portfolio page unless no
 | 0:00 | **Open** | “This is **R-on-Rails** — same one-person idea as Rails, for people whose science already lives in R. Rails → Omarchy → R-on-Rails.” |
 | 0:20 | **Stack** | “Rails 8, **CRuby**, SQLite, Solid Queue / Cable, Hotwire. No Redis, no Python workers, no React SPA.” |
 | 0:40 | **Data** | Point at price-bar count. “Synthetic GBM seed — `SEED_PROFILE=fast` on a laptop, `wow` for about a million bars.” |
-| 1:00 | **Click Local** | Select **Local R** → **Run stress test**. “Job enqueues; Puma stays free. Returns go to R as an **Arrow** table; historical VaR is Ruby calling `R.quantile` / `R.density` — the Galaaz DSL.” |
+| 1:00 | **Click Local** | Select **Local R** → **Run stress test**. “Job enqueues; Puma stays free. Returns go to R as an **Arrow IPC file** (path on the bridge); historical VaR is Ruby calling `R.quantile` / `R.density`.” |
 | 1:30 | **Charts** | When Turbo replaces the panel: “KPI delta table — historical vs Monte Carlo — and three Plotly charts: density, paths, rolling VaR breaches.” |
 | 1:50 | **Docker** (if ready) | Select **Docker dual-R** → run again. “Same job, two containers: Engine A on **R 3.6.3**, Engine B on **R 4.3.3**. Cold start is the slow part.” If amber notice: “Without Docker images we still run both engines on local R — honesty over theater.” |
 | 2:15 | **Docs** | Open **Docs → Ruby DSL**. “Same guides as `docs/` on disk, plus live excerpts from this app’s engine code.” |
@@ -96,12 +96,13 @@ Skip Docker if images are not built — Local alone still lands the Arrow + DSL 
 
 ## Dual engines (Local vs Docker)
 
-**Local R** — Arrow table handoff on the default Galaaz bridge; historical engine uses Ruby DSL
-(`R.quantile`, …); Monte Carlo runs GBM in R after the same handoff. Sequential on one R so
-DSL stays correct.
+**Local R** — Arrow **IPC** handoff (`Galaaz::ArrowIpc` + `open_ipc`) on the default Galaaz bridge
+when red-arrow is installed, else Stage A `table_from`. Historical engine uses Ruby DSL
+(`R.quantile`, …); density coordinates use Stage B2 `write_ipc` when possible. Monte Carlo runs
+GBM in R after the same ingest. Sequential on one R so DSL stays correct.
 
 **Docker dual-R** — concurrent containers (3.6.3 historical + 4.3.3 Monte Carlo). Tabular handoff
-via Feather when the image has `arrow`, else base-R `readRDS` fallback. UI shows an amber notice
+via **IPC file** when Ruby can write one, else Feather, else `readRDS`. UI shows an amber notice
 if Docker/images are missing and falls back to Local.
 
 ### One-time Docker image setup

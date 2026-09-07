@@ -9,11 +9,15 @@ Treat R like an external analytics engine with a Ruby API — not like embedding
 
 1. **Don’t block Puma** on long R calls — enqueue Solid Queue jobs.
 2. **Don’t reimplement risk math in Ruby** — call R packages.
-3. **Batch data into R** — prefer one handoff (`R::Arrow.from_ruby_batches` / Feather) over
-   thousands of tiny `R.*` round-trips.
+3. **Batch data into R** — prefer one handoff (`Galaaz::ArrowIpc.write` + `R::Arrow.open_ipc`,
+   or Stage A `from_ruby_batches` / `table_from`) over thousands of tiny assign round-trips;
+   then stay on **proxies** (`R.*`) and unbox only KPIs
+   ([architecture.md](architecture.md) — Remote Control).
 4. **Serialize shared Ruby structures** if multiple threads touch them; the bridge serializes
    calls into a given R session, but your Ruby arrays/hashes are your problem.
 5. **Surface R failures** onto `stress_tests.status` / `error_message` for the UI.
+6. **Do not pitch zero-copy shared RAM** for CRuby + NewBridge today — Stage B is an IPC file;
+   Stage C shared-memory Arrow is future work.
 
 ## Where to put code
 

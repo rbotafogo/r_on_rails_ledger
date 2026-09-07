@@ -6,8 +6,8 @@ require "galaaz"
 module Risk
   # Engine A: empirical VaR / ES, density, rolling VaR + breaches.
   #
-  # Local (default Galaaz bridge): Apache Arrow handoff + Ruby methods that call R.*.
-  # Remote @eval (Docker dual-R): Feather file + arrow::read_feather in that R.
+  # Local (default Galaaz bridge): Arrow IPC (Stage B) or table_from (Stage A) + R.* DSL.
+  # Remote @eval (Docker dual-R): IPC file, else Feather, else RDS.
   class HistoricalEngine
     Result = Struct.new(
       :var_95, :var_99, :expected_shortfall, :elapsed_ms, :payload,
@@ -79,12 +79,9 @@ module Risk
       RValues.scalar_f(R.as__numeric(R.mean(returns_vec[returns_vec <= thr])))
     end
 
-    # Kernel density coordinates for Plotly (R.density).
+    # Kernel density coordinates for Plotly (R.density; Stage B2 IPC when available).
     def return_density(returns_vec, n: 128)
-      dens = R.density(returns_vec, n: n)
-      xs = RValues.float_array(dens.x)
-      ys = RValues.float_array(dens.y)
-      xs.zip(ys).map { |x, y| { "x" => x, "y" => y } }
+      ArrowHandoff.density_xy_for_plotly(returns_vec, n: n)
     end
 
     private
@@ -100,33 +97,14 @@ module Risk
         "expected_shortfall" => es,
         "density" => return_density(returns_vec),
         "r_version" => RValues.r_version_string,
-        "handoff" => "arrow_table"
+        "handoff" => ArrowHandoff.local_handoff_tag
       }
     end
 
     def remote_arrow_eval(port_returns)
-      ArrowHandoff.with_returns_remote(port_returns, mode: @mode) do |r_feather, r_rds, r_out, host_out|
-        feather_branch =
-          if r_feather
-            <<~R
-              if (isTRUE(requireNamespace("arrow", quietly = TRUE))) {
-                tbl <- arrow::read_feather(#{r_feather.inspect})
-                x <- as.numeric(tbl[["daily_return"]])
-                handoff <- "arrow_feather"
-              } else {
-                x <- as.numeric(readRDS(#{r_rds.inspect}))
-                handoff <- "rds_fallback"
-              }
-            R
-          else
-            <<~R
-              x <- as.numeric(readRDS(#{r_rds.inspect}))
-              handoff <- "rds_fallback"
-            R
-          end
-
+      ArrowHandoff.with_returns_remote(port_returns, mode: @mode) do |paths|
         r_code = <<~R
-          #{feather_branch}
+          #{ArrowHandoff.remote_load_returns_r(paths)}
           q05 <- as.numeric(quantile(x, probs = 0.05, names = FALSE, type = 7))
           q01 <- as.numeric(quantile(x, probs = 0.01, names = FALSE, type = 7))
           es <- mean(x[x <= q05])
@@ -142,13 +120,13 @@ module Risk
             paste0('{"x":', dens$x, ',"y":', dens$y, "}", collapse = ","),
             "]}"
           )
-          writeLines(json, #{r_out.inspect})
+          writeLines(json, #{paths[:r_out].inspect})
           TRUE
         R
         RJsonJob.eval_r!(r_code, eval: @eval)
-        raise "R engine wrote no result JSON at #{host_out}" unless File.file?(host_out)
+        raise "R engine wrote no result JSON at #{paths[:host_out]}" unless File.file?(paths[:host_out])
 
-        JSON.parse(File.read(host_out))
+        JSON.parse(File.read(paths[:host_out]))
       end
     end
 

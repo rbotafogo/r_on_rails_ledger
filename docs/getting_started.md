@@ -8,6 +8,7 @@
 | **Bundler** | Comes with RubyGems / Rails. |
 | **GNU R** | `R` and `Rscript` on `PATH`. Needed when jobs call Galaaz. |
 | **C++ toolchain** | To build Galaaz’s NewBridge gatekeeper (`make` + a C++ compiler). |
+| **Apache Arrow (optional, CRuby Stage B)** | System Arrow GLib (`libarrow-glib-dev`) and `gem install red-arrow` matching `pkg-config --modversion arrow-glib`. Without it, the demo uses Stage A `table_from`. |
 | **Docker** (optional) | For concurrent R containers (Engine A / Engine B images). Local R alone is enough for phase 1. |
 
 ## Clone / open this project
@@ -87,6 +88,12 @@ bin/rails runner "require 'galaaz'; puts RUBY_ENGINE; puts R::Support.eval('R.ve
 ```
 
 Expect CRuby (`ruby`) and a GNU R version string.
+
+Arrow IPC smoke (needs seed data + `Galaaz::ArrowIpc`):
+
+```bash
+bin/rails runner script/arrow_ipc_panel_demo.rb
+```
 
 Note: prefer `R::Support.eval` / `R.bridge.eval_r` for string eval. Bare `R.eval_r(...)`
 is not a Ruby method on `R` today (it would go through `method_missing` as an R function).

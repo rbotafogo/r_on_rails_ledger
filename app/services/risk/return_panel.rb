@@ -30,5 +30,15 @@ module Risk
         end
       end
     end
+
+    # Columnar hash for Galaaz::ArrowIpc.write / write_batches (not a Rails/Galaaz API named pluck_to_arrow).
+    def self.column_hash(rows)
+      {
+        "traded_at" => rows.map { |r| r["traded_at"] },
+        "ticker" => rows.map { |r| r["ticker"] },
+        "daily_return" => rows.map { |r| r["daily_return"].to_f },
+        "weight" => rows.map { |r| r["weight"].to_f }
+      }
+    end
   end
 end

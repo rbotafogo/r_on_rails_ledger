@@ -29,19 +29,34 @@ R.eval_r_async("Sys.sleep(1); 42", timeout: nil) do |result|
 end
 ```
 
-Phase 1 of this app uses **`R::Arrow.table_from` / Feather** for portfolio returns (see
-`Risk::ArrowHandoff` + `Risk::HistoricalEngine`) so large vectors stay out of Ruby splat/`R.c`
-limits. Local analytics prefer Ruby methods that call `R.quantile`, `R.density`, etc.
+Phase 1 of this app uses **`Galaaz::ArrowIpc` + `R::Arrow.open_ipc`** for portfolio returns when
+the Ruby Arrow backend is installed (CRuby **red-arrow**, JRuby Arrow Java), else
+**`R::Arrow.table_from`**. Docker prefers **`returns.arrow`** (IPC), then Feather, then RDS.
+See `Risk::ArrowHandoff` + `Risk::HistoricalEngine`. Local analytics prefer Ruby methods that
+call `R.quantile`, `R.density`, etc.
 
-## Tabular handoff (Arrow-oriented, not zero-copy)
+## Tabular handoff (Arrow-oriented, not zero-copy shared RAM)
+
+Ingest once into an R-side Arrow table / vectors; then use **proxy** `R.*` calls (Remote Control).
+Do not claim Ruby and R share the same physical Arrow buffer today — see
+[architecture.md](architecture.md).
 
 ```ruby
-# Conceptual shape — exact column builder follows Galaaz examples:
-table = R::Arrow.from_ruby_batches([
-  { "trade_date" => dates, "ticker" => tickers, "daily_return" => returns }
-])
-# Then dplyr / PerformanceAnalytics in R on that table
+# Stage B1 — IPC file; only the path crosses NewBridge
+path = Galaaz::ArrowIpc.write(Risk::ReturnPanel.column_hash(rows))
+tbl  = R::Arrow.open_ipc(path)
+Galaaz::ArrowIpc.release(path)
+
+# Stage A fallback (copy into R)
+# tbl = R::Arrow.from_ruby_batches(rows)
+
+# Stage B2 — bulky result table back to Ruby
+out = R::Arrow.write_ipc(summarised)
+rows = Galaaz::ArrowIpc.read_batches(out)
+Galaaz::ArrowIpc.release(out)
 ```
+
+Runnable: `bin/rails runner script/arrow_ipc_panel_demo.rb`.
 
 Prefer one bulk handoff per stress test over per-row assigns.
 

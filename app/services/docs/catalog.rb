@@ -8,7 +8,7 @@ module Docs
     PAGES = [
       Page.new(slug: "getting-started", title: "Getting started", summary: "Boot the app, Galaaz, seed data.", filename: "getting_started.md"),
       Page.new(slug: "product-scenario", title: "Product scenario", summary: "What the family-office stress demo is for.", filename: "product_scenario.md"),
-      Page.new(slug: "architecture", title: "Architecture", summary: "Honest stack: Rails, Galaaz, Arrow, multi-R.", filename: "architecture.md"),
+      Page.new(slug: "architecture", title: "Architecture", summary: "Honest stack: proxies, Arrow handoff, no fake zero-copy.", filename: "architecture.md"),
       Page.new(slug: "implementation-plan", title: "Implementation plan", summary: "Phase checklist for this demo.", filename: "implementation_plan.md"),
       Page.new(slug: "data-and-seeding", title: "Data and seeding", summary: "GBM panel, insert_all, SEED_PROFILE.", filename: "data_and_seeding.md"),
       Page.new(slug: "engines-and-dashboard", title: "Engines and dashboard", summary: "Dual engines, KPIs, Plotly charts.", filename: "engines_and_dashboard.md"),

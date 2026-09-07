@@ -26,7 +26,7 @@ Phased checklist. Do not skip honesty gates in [architecture.md](architecture.md
 - [x] Active Job `:async` in development (same-process; Cable broadcasts work). Solid Queue
       gem present for production / optional `SOLID_QUEUE_IN_PUMA` later
 - [x] Job: load returns → Galaaz → historical VaR / ES → chart payload
-      (Plotly JSON via Arrow handoff + Ruby DSL `R.quantile` / `R.density`; Feather for Docker)
+      (Plotly JSON via Arrow IPC / table_from + Ruby DSL `R.quantile` / `R.density`; IPC/Feather for Docker)
 - [x] Turbo Stream replace of `#stress_test_results`
 - [x] Persist status: `pending` → `calculating` → `completed` / `failed`
 
@@ -57,7 +57,7 @@ Phased checklist. Do not skip honesty gates in [architecture.md](architecture.md
 - [ ] Pluggy (or other) live ingest into `historical_prices`
 - [ ] Auth / multi-portfolio tenancy
 - [ ] Plotly from R only if Hotwire+SVG is not enough
-- [ ] App-local helpers mimicking nicer Arrow loaders (`pluck`-style) — **app code**, not fake gem APIs
+- [x] App-local helpers mimicking nicer Arrow loaders (`Risk::ReturnPanel.column_hash` + `Galaaz::ArrowIpc`) — **app code**, not fake gem APIs
 
 ## Non-goals (do not schedule as “missing demo features”)
 

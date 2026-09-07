@@ -6,7 +6,7 @@ require "galaaz"
 
 module Risk
   # Shared portfolio aggregation + remote R eval adapter.
-  # Tabular handoff lives in Risk::ArrowHandoff (Arrow / Feather), not CSV.
+  # Tabular handoff lives in Risk::ArrowHandoff (Arrow IPC / table_from / Feather), not CSV.
   module RJsonJob
     module_function
 

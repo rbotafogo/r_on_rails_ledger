@@ -10,7 +10,8 @@ having the Galaaz git tree open in the IDE.
 | GitHub | https://github.com/rbotafogo/galaaz |
 | GitHub Pages docs | https://rbotafogo.github.io/galaaz/ |
 | Local sibling (dev) | `../galaaz` (path gem) |
-| Local manual (if sibling present) | `../galaaz/blogs/manual/manual.md` |
+| Local manual (if sibling present) | `../galaaz/blogs/manual/manual.md` (`# Apache Arrow`) |
+| Arrow roadmap | `../galaaz/Documentation/ROADMAP_ARROW_RUBY_R.md` |
 | Changelog | `../galaaz/CHANGELOG.md` or GitHub |
 
 ## Rails 8 / Solid / Hotwire

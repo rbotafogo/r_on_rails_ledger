@@ -27,7 +27,8 @@ You do **not** need to master the whole Rails Guides to complete the demo.
 Prefer small, reviewable R expressions or scripts invoked from the job, for example:
 
 - `R.library("PerformanceAnalytics")`
-- `R::Arrow.from_ruby_batches(...)` then dplyr / PerformanceAnalytics in R
+- `Galaaz::ArrowIpc.write` + `R::Arrow.open_ipc` (Stage B IPC) or `R::Arrow.from_ruby_batches` (Stage A copy), then dplyr / PerformanceAnalytics in R
+- `bin/rails runner script/arrow_ipc_panel_demo.rb` — ticker-level B1/B2 example
 - `R.eval_r("...")` for short snippets
 - Save plots as SVG from R and stream them into the page
 

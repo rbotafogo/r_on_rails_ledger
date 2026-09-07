@@ -8,7 +8,7 @@ module Docs
     def self.all
       [
         excerpt(
-          "Arrow handoff (Ruby columns → R Arrow Table)",
+          "Arrow handoff (Stage B IPC or Stage A table_from)",
           "app/services/risk/arrow_handoff.rb",
           /def to_returns_table.*?^    end$/m
         ),

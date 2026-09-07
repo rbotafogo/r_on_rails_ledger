@@ -12,7 +12,7 @@
       <p class="max-w-2xl text-lg leading-relaxed text-[var(--ledger-muted)]">
         This app is a family-office style portfolio stress tester: SQLite holds the ledger,
         a background job calls <strong class="font-medium text-[var(--ledger-ink)]">GNU R through Galaaz</strong>
-        (Arrow handoff + Ruby <code class="font-mono text-sm">R.*</code> DSL),
+        (Arrow IPC handoff + Ruby <code class="font-mono text-sm">R.*</code> DSL),
         and Hotwire streams VaR / Expected Shortfall plus Plotly charts back to the page.
       </p>
       <div class="flex flex-wrap gap-3 pt-2">
@@ -39,7 +39,7 @@
       <h2 class="text-sm font-semibold uppercase tracking-wide text-[var(--ledger-muted)]">Try this now</h2>
       <ol class="mt-3 list-decimal space-y-2 pl-5 text-sm leading-relaxed text-[var(--ledger-ink)]">
         <li>Open the demo portfolio.</li>
-        <li>Choose <strong>Local R</strong> (Arrow + DSL) or <strong>Docker dual-R</strong> (3.6.3 ∥ 4.3.3).</li>
+        <li>Choose <strong>Local R</strong> (Arrow IPC + DSL) or <strong>Docker dual-R</strong> (3.6.3 ∥ 4.3.3).</li>
         <li>Click <strong>Run stress test</strong> — KPIs + Plotly update without a full reload.</li>
       </ol>
       <p class="mt-4 text-xs leading-relaxed text-[var(--ledger-muted)]">

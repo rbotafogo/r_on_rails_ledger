@@ -17,7 +17,8 @@ SQLite holds the book, Solid Queue orchestrates risk jobs, Hotwire streams resul
 1. Open a portfolio page (assets + weights).
 2. Click **Run stress test**.
 3. Rails creates a `StressTest` row and enqueues a Solid Queue job.
-4. The job loads historical returns from SQLite, hands them to R (Arrow-oriented handoff),
+4. The job loads historical returns from SQLite, hands them to R (Arrow IPC file when the Ruby
+   backend is present, otherwise a copy into an R-side Arrow table),
    and runs risk models.
 5. **Engine A** — historical VaR / Expected Shortfall style metrics (e.g. PerformanceAnalytics).
 6. **Engine B** (phase 2+) — Monte Carlo / denser simulation on a second R process or container.
