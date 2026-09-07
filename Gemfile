@@ -37,13 +37,16 @@ gem "thruster", require: false
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 gem "image_processing", "~> 1.2"
 
-# R-on-Rails: GNU R bridge.
+# R-on-Rails: GNU R bridge (CRuby or JRuby — same gem).
 #
-# Development (sibling checkout next to this app):
-#   gem "galaaz", path: "../galaaz"
-# Pitch / standalone clone (published gem — remove the path: line):
-#   gem "galaaz"
-gem "galaaz", path: "../galaaz"
+# Default: published gem from RubyGems.
+# Optional local checkout: GALAAZ_GEM_PATH=/path/to/galaaz bundle install
+galaaz_path = ENV["GALAAZ_GEM_PATH"].to_s
+if !galaaz_path.empty? && Dir.exist?(galaaz_path)
+  gem "galaaz", path: galaaz_path
+else
+  gem "galaaz"
+end
 gem "msgpack" # NewBridge wire format (also a galaaz dependency)
 gem "csv"     # seeds / GBM panel generation
 gem "redcarpet" # render docs/*.md inside the app

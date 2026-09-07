@@ -1,9 +1,3 @@
-PATH
-  remote: ../galaaz
-  specs:
-    galaaz (2.1.0)
-      msgpack (~> 1.0)
-
 GEM
   remote: https://rubygems.org/
   specs:
@@ -128,6 +122,8 @@ GEM
     fugit (1.13.0)
       et-orbi (~> 1.4)
       raabro (~> 1.4)
+    galaaz (2.1.4)
+      msgpack (~> 1.0)
     globalid (1.4.0)
       activesupport (>= 6.1)
     i18n (1.15.2)
@@ -390,7 +386,7 @@ DEPENDENCIES
   capybara
   csv
   debug
-  galaaz!
+  galaaz
   image_processing (~> 1.2)
   importmap-rails
   msgpack
