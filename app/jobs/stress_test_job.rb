@@ -4,7 +4,8 @@ class StressTestJob < ApplicationJob
   queue_as :default
 
   # runtime: "local" (default, fast) or "docker" (R 3.6.3 + 4.3.3)
-  def perform(stress_test_id, runtime = "local")
+  # mc_paths: optional Monte Carlo path count from the UI (nil → memory-based default)
+  def perform(stress_test_id, runtime = "local", mc_paths = nil)
     test = StressTest.find(stress_test_id)
     test.update!(status: "calculating", error_message: nil)
     test.stress_test_runs.destroy_all
@@ -20,7 +21,8 @@ class StressTestJob < ApplicationJob
     outcome = Risk::DualOrchestrator.call(
       rows,
       portfolio_value: portfolio_value,
-      preferred: runtime
+      preferred: runtime,
+      mc_paths: mc_paths
     )
 
     if outcome.historical

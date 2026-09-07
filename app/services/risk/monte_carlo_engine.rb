@@ -6,8 +6,8 @@ require "galaaz"
 module Risk
   # Engine B: forward Monte Carlo (GBM calibrated to historical portfolio returns).
   #
-  # Local: Arrow table → numeric vector, then GBM in R referenced by handle.
-  # Remote @eval: Feather + arrow::read_feather (same numbers, other R process).
+  # Local: Arrow IPC / table_from → numeric vector, then GBM in R referenced by handle.
+  # Remote @eval: IPC file, else Feather, else RDS.
   class MonteCarloEngine
     Result = Struct.new(
       :sim_var_30d, :sim_expected_max_drawdown, :tail_risk_probability,
@@ -15,19 +15,28 @@ module Risk
       keyword_init: true
     )
 
-    def self.call(rows, portfolio_value:, mode: :local, eval: nil, r_version_label: nil)
-      new(rows, portfolio_value: portfolio_value, mode: mode, eval: eval, r_version_label: r_version_label).call
+    def self.call(rows, portfolio_value:, mode: :local, eval: nil, r_version_label: nil, n_paths: nil, sample_paths: nil)
+      new(
+        rows,
+        portfolio_value: portfolio_value,
+        mode: mode,
+        eval: eval,
+        r_version_label: r_version_label,
+        n_paths: n_paths,
+        sample_paths: sample_paths
+      ).call
     end
 
-    def initialize(rows, portfolio_value:, mode: :local, eval: nil, r_version_label: nil)
+    def initialize(rows, portfolio_value:, mode: :local, eval: nil, r_version_label: nil, n_paths: nil, sample_paths: nil)
       @rows = rows
       @portfolio_value = portfolio_value.to_f
       @mode = mode
       @eval = eval
       @r_version_label = r_version_label
-      @n_paths = ENV.fetch("MC_PATHS", "5000").to_i
+      @n_paths = McPaths.resolve(n_paths)
       @horizon = ENV.fetch("MC_HORIZON_DAYS", "30").to_i
-      @sample_paths = ENV.fetch("MC_SAMPLE_PATHS", "100").to_i
+      @sample_paths = sample_paths.presence&.to_i
+      @sample_paths = McPaths.sample_paths_for(@n_paths) if @sample_paths.nil? || @sample_paths <= 0
     end
 
     def call
@@ -57,6 +66,10 @@ module Risk
           "r_version_label" => @r_version_label || raw["r_version"]
         )
       )
+    rescue McPaths::InsufficientMemory
+      raise
+    rescue StandardError => e
+      raise McPaths.wrap_runtime_failure(e, n_paths: @n_paths)
     end
 
     # Calibrate μ/σ from Arrow-backed returns via R.* (showcase helpers).
@@ -83,47 +96,28 @@ module Risk
         sig: sig,
         write_json_path: nil
       ))
-      JSON.parse(RValues.scalar_s(js)).merge("handoff" => "arrow_table")
+      JSON.parse(RValues.scalar_s(js)).merge("handoff" => ArrowHandoff.local_handoff_tag)
     end
 
     def remote_arrow_eval(port_returns)
-      ArrowHandoff.with_returns_remote(port_returns, mode: @mode) do |r_feather, r_rds, r_out, host_out|
-        load_x =
-          if r_feather
-            <<~R
-              if (isTRUE(requireNamespace("arrow", quietly = TRUE))) {
-                tbl <- arrow::read_feather(#{r_feather.inspect})
-                x <- as.numeric(tbl[["daily_return"]])
-                handoff <- "arrow_feather"
-              } else {
-                x <- as.numeric(readRDS(#{r_rds.inspect}))
-                handoff <- "rds_fallback"
-              }
-            R
-          else
-            <<~R
-              x <- as.numeric(readRDS(#{r_rds.inspect}))
-              handoff <- "rds_fallback"
-            R
-          end
-
+      ArrowHandoff.with_returns_remote(port_returns, mode: @mode) do |paths|
         r_code = <<~R
-          #{load_x}
+          #{ArrowHandoff.remote_load_returns_r(paths)}
           mu <- mean(x)
           sig <- sd(x)
           if (!is.finite(sig) || sig <= 0) sig <- 1e-4
-          #{gbm_r_body(x_expr: "x", mu: nil, sig: nil, write_json_path: r_out, handoff_expr: "handoff")}
+          #{gbm_r_body(x_expr: "x", mu: nil, sig: nil, write_json_path: paths[:r_out], handoff_expr: "handoff")}
           TRUE
         R
         RJsonJob.eval_r!(r_code, eval: @eval)
-        raise "R engine wrote no result JSON at #{host_out}" unless File.file?(host_out)
+        raise "R engine wrote no result JSON at #{paths[:host_out]}" unless File.file?(paths[:host_out])
 
-        JSON.parse(File.read(host_out))
+        JSON.parse(File.read(paths[:host_out]))
       end
     end
 
     # Shared GBM body. When mu/sig are nil, expects R locals mu/sig already set.
-    def gbm_r_body(x_expr:, mu:, sig:, write_json_path:, handoff_expr: '"arrow_table"')
+    def gbm_r_body(x_expr:, mu:, sig:, write_json_path:, handoff_expr: '"arrow_ipc"')
       mu_line = mu.nil? ? "" : "mu <- #{mu};"
       sig_line = sig.nil? ? "" : "sig <- #{sig};"
       out =

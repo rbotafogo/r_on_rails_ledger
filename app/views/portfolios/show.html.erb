@@ -45,7 +45,7 @@
       <div>
         <h2 class="text-xl font-semibold" style="font-family: 'IBM Plex Serif', Georgia, serif;">Stress test</h2>
         <p class="text-sm text-[var(--ledger-muted)]">
-          <strong>Local R</strong> — Arrow + Ruby DSL on the host Galaaz bridge.
+          <strong>Local R</strong> — Arrow IPC + Ruby DSL on the host Galaaz bridge.
           <strong>Docker</strong> — concurrent R <%= Risk::DockerEngines::HIST_VERSION %> ∥ <%= Risk::DockerEngines::MC_VERSION %>.
           See <%= link_to "Ruby DSL docs", doc_path("ruby-dsl"), class: "text-[var(--ledger-accent)] hover:underline" %>.
         </p>
@@ -78,6 +78,30 @@
             </span>
           </label>
         </div>
+      </fieldset>
+
+      <fieldset class="rounded-xl border border-[var(--ledger-line)] bg-[var(--ledger-panel)] p-4">
+        <legend class="px-1 text-sm font-semibold text-[var(--ledger-ink)]">Monte Carlo paths</legend>
+        <div class="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+          <%= label_tag :mc_paths, "Path count", class: "text-sm font-medium text-[var(--ledger-ink)]" %>
+          <%= select_tag :mc_paths,
+                options_for_select(
+                  Risk::McPaths::PRESETS.map { |n|
+                    label = "#{n} paths"
+                    label += " (recommended)" if n == @mc_paths_default
+                    [label, n]
+                  },
+                  @mc_paths_default
+                ),
+                class: "rounded-md border border-[var(--ledger-line)] bg-white px-3 py-2 text-sm text-[var(--ledger-ink)]" %>
+        </div>
+        <p class="mt-2 text-xs text-[var(--ledger-muted)]">
+          Default follows free RAM
+          <% if @mc_mem_mib.to_i.positive? %>
+            (~<%= @mc_mem_mib %> MiB available; soft max ≈ <%= @mc_max_safe %> paths)
+          <% end %>.
+          Choosing too many paths will not crash the app — Engine B reports a clear “not enough memory / reduce paths” error instead.
+        </p>
       </fieldset>
 
       <%= submit_tag "Run stress test",

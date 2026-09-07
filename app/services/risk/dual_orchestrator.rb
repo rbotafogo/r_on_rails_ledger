@@ -3,21 +3,22 @@
 module Risk
   # Runs Engine A + Engine B.
   # preferred: "local" (Arrow + Ruby DSL on default Galaaz R) |
-  #            "docker" (Feather handoff, concurrent R 3.6.3 + 4.3.3).
+  #            "docker" (Arrow IPC / Feather / RDS, concurrent R 3.6.3 + 4.3.3).
   class DualOrchestrator
     Outcome = Struct.new(
       :historical, :monte_carlo, :wall_elapsed_ms, :errors, :runtime,
       keyword_init: true
     )
 
-    def self.call(rows, portfolio_value:, preferred: "local")
-      new(rows, portfolio_value: portfolio_value, preferred: preferred).call
+    def self.call(rows, portfolio_value:, preferred: "local", mc_paths: nil)
+      new(rows, portfolio_value: portfolio_value, preferred: preferred, mc_paths: mc_paths).call
     end
 
-    def initialize(rows, portfolio_value:, preferred: "local")
+    def initialize(rows, portfolio_value:, preferred: "local", mc_paths: nil)
       @rows = rows
       @portfolio_value = portfolio_value
       @preferred = preferred.to_s
+      @mc_paths = mc_paths
     end
 
     def call
@@ -58,7 +59,8 @@ module Risk
           portfolio_value: @portfolio_value,
           mode: mode,
           eval: mc_eval,
-          r_version_label: mc_label
+          r_version_label: mc_label,
+          n_paths: @mc_paths
         )
       rescue StandardError => e
         errors["monte_carlo"] = e.message
@@ -95,7 +97,7 @@ module Risk
     end
 
     def run_local(notice:)
-      # Default Galaaz bridge: Arrow tables + Ruby methods calling R.* (sequential, one R).
+      # Default Galaaz bridge: Arrow IPC (or table_from) + Ruby methods calling R.* (sequential).
       wall_started = Process.clock_gettime(Process::CLOCK_MONOTONIC)
       errors = {}
       historical = nil
@@ -108,7 +110,11 @@ module Risk
       end
       begin
         monte_carlo = MonteCarloEngine.call(
-          @rows, portfolio_value: @portfolio_value, mode: :local, r_version_label: "local"
+          @rows,
+          portfolio_value: @portfolio_value,
+          mode: :local,
+          r_version_label: "local",
+          n_paths: @mc_paths
         )
       rescue StandardError => e
         errors["monte_carlo"] = e.message
@@ -133,7 +139,8 @@ module Risk
           "mode" => mode,
           "preferred" => @preferred,
           "concurrent" => concurrent,
-          "handoff" => concurrent ? "arrow_feather" : "arrow_table",
+          "handoff" => historical&.payload&.dig("handoff") ||
+            (concurrent ? "arrow_ipc" : ArrowHandoff.local_handoff_tag),
           "historical_target" => DockerEngines::HIST_VERSION,
           "monte_carlo_target" => DockerEngines::MC_VERSION,
           "historical_r" => historical&.payload&.dig("r_version"),

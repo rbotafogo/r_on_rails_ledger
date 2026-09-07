@@ -6,8 +6,11 @@ class StressTestsController < ApplicationController
     runtime = normalize_runtime(params[:runtime])
     session[:risk_runtime] = runtime
 
+    mc_paths = normalize_mc_paths(params[:mc_paths])
+    session[:mc_paths] = mc_paths
+
     stress_test = portfolio.stress_tests.create!(status: "pending")
-    StressTestJob.perform_later(stress_test.id, runtime)
+    StressTestJob.perform_later(stress_test.id, runtime, mc_paths)
 
     respond_to do |format|
       format.turbo_stream do
@@ -29,6 +32,13 @@ class StressTestsController < ApplicationController
 
   def normalize_runtime(value)
     value.to_s == "docker" ? "docker" : "local"
+  end
+
+  def normalize_mc_paths(value)
+    n = value.to_i
+    return Risk::McPaths.suggested_default if n <= 0
+
+    n
   end
 
   def inline_on_portfolio_show?(portfolio)
