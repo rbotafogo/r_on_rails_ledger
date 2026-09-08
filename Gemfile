@@ -50,6 +50,7 @@ end
 gem "msgpack" # NewBridge wire format (also a galaaz dependency)
 gem "csv"     # seeds / GBM panel generation
 gem "redcarpet" # render docs/*.md inside the app
+gem "benchmark" # seeds.rb timing; not a default gem on Ruby 3.4+/4.0
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
