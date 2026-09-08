@@ -4,7 +4,7 @@
 
 | Dependency | Notes |
 |------------|--------|
-| **CRuby 3.3+** | This app pins `.ruby-version` to `3.3.12`. JRuby also works with Galaaz; this demo defaults to CRuby for the Rails 8 / DHH stack story. |
+| **CRuby 3.3+** (host / mise latest) | No `.ruby-version` pin — on Omarchy this is whatever Install → Ruby on Rails installed. JRuby also works with Galaaz; this demo defaults to CRuby for the Rails 8 / DHH stack story. |
 | **Bundler** | Comes with RubyGems / Rails. |
 | **GNU R** | `R` and `Rscript` on `PATH`. Needed when jobs call Galaaz. |
 | **C++ toolchain** | To build Galaaz’s NewBridge gatekeeper (`make` + a C++ compiler). |

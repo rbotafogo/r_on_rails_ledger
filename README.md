@@ -2,12 +2,12 @@
 
 Standalone **Rails 8** demo of **R-on-Rails**: a family-office style portfolio stress tester.
 
-- **App runtime:** CRuby (pinned in `.ruby-version`)
+- **App runtime:** CRuby (uses the host / mise Ruby — no pinned `.ruby-version`)
 - **Data / jobs / cable:** SQLite + Solid Queue + Solid Cable + Hotwire
 - **Statistics:** GNU R via the [Galaaz](https://github.com/rbotafogo/galaaz) bridge
 
 This repository is **isolated** from the Galaaz gem source tree. Open **this** project in your
-editor. Galaaz is a dependency (path gem to `../galaaz` in development, or RubyGems — see below).
+editor. Galaaz is a dependency (RubyGems by default; optional `GALAAZ_GEM_PATH` for a local checkout — see below).
 
 ## Documentation (start here)
 
