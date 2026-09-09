@@ -1,7 +1,7 @@
 # Documentation index — R-on-Rails Ledger
 
 This app is a **standalone Rails 8 demo** of **R-on-Rails**: keep statistical work in
-**GNU R**, put the product shell on **Rails** (CRuby by default; JRuby also works with
+**GNU R**, put the product shell on **Rails** (CRuby or JRuby — Bundler picks the SQLite stack;
 the same Galaaz bridge).
 
 You do **not** need to open the Galaaz repository as a Cursor/IDE project to work here.
@@ -19,6 +19,12 @@ detail, use the published docs or the sibling checkout only as a library.
 This demo (`r_on_rails_ledger`) is the concrete R-on-Rails showcase: a family-office style
 portfolio stress tester on **SQLite + Solid Queue + Solid Cable + Hotwire**, with Galaaz
 driving concurrent GNU R engines for VaR / Monte Carlo style risk.
+
+**Blog post (general audience):** the Galaaz repository ships
+[`blogs/r_on_rails_ledger/`](https://github.com/rbotafogo/galaaz/tree/master/blogs/r_on_rails_ledger)
+(screenshots of the KPI + Plotly page). Published HTML/PDF appear on
+[rbotafogo.github.io/galaaz](https://rbotafogo.github.io/galaaz/). This `docs/` tree remains
+the operational source of truth for running the app.
 
 ## Read in this order
 

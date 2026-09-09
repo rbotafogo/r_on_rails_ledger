@@ -13,4 +13,16 @@ export PORT="${PORT:-3000}"
 export RUBY_DEBUG_OPEN="true"
 export RUBY_DEBUG_LAZY="true"
 
+# JRuby / universal-java: tailwindcss-ruby ships no native CLI. Point at a host binary.
+case "$(ruby -e 'print RUBY_ENGINE' 2>/dev/null)" in
+  jruby)
+    ROOT="$(CDPATH= cd -- "$(dirname "$0")/.." && pwd)"
+    INSTALL_DIR="$("$ROOT/bin/ensure_tailwind_cli")"
+    export TAILWINDCSS_INSTALL_DIR="$INSTALL_DIR"
+    echo "NOTE: JRuby — using Tailwind CLI from TAILWINDCSS_INSTALL_DIR=$TAILWINDCSS_INSTALL_DIR"
+    # JDBC SQLite + Arrow need JVM native access / opens (JDK 24+).
+    export JAVA_OPTS="--enable-native-access=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED ${JAVA_OPTS:-}"
+    ;;
+esac
+
 exec foreman start -f Procfile.dev "$@"

@@ -8,7 +8,7 @@ This document is the contract between marketing language and what we implement.
 Browser (Hotwire / Turbo / Stimulus / Tailwind)
         │
         ▼
-Puma (CRuby) ── Active Record ── SQLite (primary ledger)
+Puma (CRuby or JRuby) ── Active Record ── SQLite (primary ledger; native or JDBC)
         │
         ├── Solid Cable ── live Turbo Streams
         │
@@ -130,14 +130,14 @@ CRuby’s GVL matters for CPU-heavy Ruby. We keep Ruby as **orchestrator**; R do
 Solid Queue concurrency is process/thread based at the Rails layer — that is the demo’s
 parallelism story for “Puma stays free.”
 
-## CRuby default, JRuby optional
+## CRuby and JRuby
 
 | Runtime | Role in this demo |
 |---------|-------------------|
-| **CRuby** | Default app runtime (Rails 8 pitch) |
-| **JRuby** | Same Galaaz bridge; useful if you later want true JVM threads in-process |
+| **CRuby** | Native `sqlite3`, bootsnap, thruster; common Omarchy / Rails 8 pitch |
+| **JRuby** | JDBC SQLite adapters; same Galaaz bridge; true JVM threads in-process |
 
-Do not require JRuby to run the ledger demo.
+Bundler selects the SQLite stack from `RUBY_ENGINE`. Boot logs `[r_on_rails_ledger] Ruby engine=…`.
 
 ## Security / ops notes (later phases)
 

@@ -1,11 +1,15 @@
-# SQLite. Versions 3.8.0 and up are supported.
-#   gem install sqlite3
+# SQLite for both engines:
+#   CRuby / MRI → gem "sqlite3" (native)
+#   JRuby       → activerecord-jdbcsqlite3-adapter (adapter name stays "sqlite3")
 #
-#   Ensure the SQLite 3 gem is defined in your Gemfile
-#   gem "sqlite3"
-#
+# Bundler picks the right gem from the Gemfile `platforms:` / `platform :jruby`.
 default: &default
   adapter: sqlite3
+  <% if RUBY_ENGINE == "jruby" %>
+  # JDBC driver options (ignored by the MRI sqlite3 adapter)
+  properties:
+    journal_mode: wal
+  <% end %>
   max_connections: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
   timeout: 5000
 

@@ -5,7 +5,7 @@ Phased checklist. Do not skip honesty gates in [architecture.md](architecture.md
 ## Phase 0 — Scaffold (done when this repo boots)
 
 - [x] Rails 8.1 app at `/home/rbotafogo/desenv_linux/r_on_rails_ledger`
-- [x] CRuby (host Ruby; no `.ruby-version` pin — Omarchy-friendly)
+- [x] CRuby or JRuby (host / mise Ruby; no `.ruby-version` pin — Omarchy-friendly; Bundler picks SQLite stack)
 - [x] SQLite + Hotwire + Tailwind + Solid Queue/Cache/Cable gems
 - [x] Path gem `galaaz` → `../galaaz`
 - [x] Self-contained `docs/`

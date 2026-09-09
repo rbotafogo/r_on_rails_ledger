@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# Ensure a host-OS Tailwind CLI exists for engines without gem platform binaries (JRuby).
+# See: https://github.com/flavorjones/tailwindcss-ruby#using-a-local-installation-of-tailwindcss
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+DEST_DIR="${TAILWINDCSS_INSTALL_DIR:-$ROOT/tmp/tailwindcss-cli}"
+DEST="$DEST_DIR/tailwindcss"
+VERSION="${TAILWINDCSS_VERSION:-v4.3.3}"
+
+if [[ -x "$DEST" ]]; then
+  echo "$DEST_DIR"
+  exit 0
+fi
+
+mkdir -p "$DEST_DIR"
+
+# Prefer a binary already installed by the CRuby platform gem (same lockfile).
+CANDIDATE="$(find "$ROOT/vendor/bundle" -path '*/exe/x86_64-linux-gnu/tailwindcss' -type f 2>/dev/null | head -1 || true)"
+if [[ -z "$CANDIDATE" ]]; then
+  CANDIDATE="$(find "$ROOT/vendor/bundle" -path '*/exe/x86_64-linux-musl/tailwindcss' -type f 2>/dev/null | head -1 || true)"
+fi
+
+if [[ -n "$CANDIDATE" && -x "$CANDIDATE" ]]; then
+  ln -sfn "$CANDIDATE" "$DEST"
+  echo "$DEST_DIR"
+  exit 0
+fi
+
+ARCH="$(uname -m)"
+case "$ARCH" in
+  x86_64|amd64) ASSET="tailwindcss-linux-x64" ;;
+  aarch64|arm64) ASSET="tailwindcss-linux-arm64" ;;
+  *)
+    echo "bin/ensure_tailwind_cli: unsupported arch $ARCH" >&2
+    exit 1
+    ;;
+esac
+
+URL="https://github.com/tailwindlabs/tailwindcss/releases/download/${VERSION}/${ASSET}"
+echo "Downloading Tailwind CLI ${VERSION} (${ASSET})..."
+curl -fsSL "$URL" -o "$DEST"
+chmod +x "$DEST"
+echo "$DEST_DIR"

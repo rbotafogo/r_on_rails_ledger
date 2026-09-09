@@ -31,7 +31,9 @@ Treat R like an external analytics engine with a Ruby API — not like embedding
 
 ## CRuby vs JRuby
 
-This app targets **CRuby**. Galaaz supports JRuby with the same bridge. Switching the app
+This app runs on **CRuby or JRuby**. Bundler installs `sqlite3` (MRI) or
+`activerecord-jdbcsqlite3-adapter` (JRuby). Galaaz uses the same bridge on both. Preferring
+CRuby for a pitch is optional — both engines are first-class. Switching the app
 runtime is a deployment choice, not a rewrite of the risk logic.
 
 ## Testing strategy (planned)

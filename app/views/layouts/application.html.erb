@@ -10,9 +10,8 @@
     <%= csp_meta_tag %>
     <%= yield :head %>
 
-    <link rel="icon" href="/icon.png" type="image/png">
-    <link rel="icon" href="/icon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="/icon.png">
+    <link rel="icon" href="<%= asset_path('galaaz-favicon.png') %>" type="image/png">
+    <link rel="apple-touch-icon" href="<%= asset_path('galaaz-favicon.png') %>">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -26,15 +25,19 @@
 
   <body class="min-h-screen bg-[var(--ledger-bg)] text-[var(--ledger-ink)] antialiased" style="font-family: 'IBM Plex Sans', system-ui, sans-serif;">
     <header class="border-b border-[var(--ledger-line)] bg-[var(--ledger-panel)]/90 backdrop-blur">
-      <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-4">
-        <div>
-          <%= link_to root_path, class: "group block" do %>
-            <span class="block text-xs font-medium uppercase tracking-[0.18em] text-[var(--ledger-muted)]">OnRails family</span>
-            <span class="block text-xl font-semibold tracking-tight text-[var(--ledger-ink)] group-hover:text-[var(--ledger-accent)]" style="font-family: 'IBM Plex Serif', Georgia, serif;">
-              R-on-Rails Ledger
+      <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3">
+        <%= link_to root_path, class: "group flex min-w-0 items-center gap-3 no-underline" do %>
+          <%= image_tag "galaaz-horizontal-lockup.png",
+                alt: "Galaaz R-on-Rails",
+                class: "h-10 w-auto max-w-[min(100%,14rem)] object-contain object-left sm:h-11" %>
+          <span class="hidden h-8 w-px shrink-0 bg-[var(--ledger-line)] sm:block" aria-hidden="true"></span>
+          <span class="min-w-0">
+            <span class="block text-xs font-medium uppercase tracking-[0.18em] text-[var(--ledger-muted)]">Portfolio app</span>
+            <span class="block truncate text-lg font-semibold tracking-tight text-[var(--ledger-ink)] group-hover:text-[var(--ledger-accent)] sm:text-xl" style="font-family: 'IBM Plex Serif', Georgia, serif;">
+              Ledger
             </span>
-          <% end %>
-        </div>
+          </span>
+        <% end %>
         <nav class="flex flex-wrap items-center gap-2 text-sm">
           <%= link_to "Home", root_path, class: "rounded-md px-3 py-1.5 text-[var(--ledger-ink)] hover:bg-[var(--ledger-bg)]" %>
           <%= link_to "Docs", docs_path, class: "rounded-md px-3 py-1.5 text-[var(--ledger-ink)] hover:bg-[var(--ledger-bg)]" %>
@@ -51,8 +54,13 @@
     </main>
 
     <footer class="border-t border-[var(--ledger-line)] bg-[var(--ledger-panel)]">
-      <div class="mx-auto flex max-w-6xl flex-col gap-2 px-5 py-6 text-sm text-[var(--ledger-muted)] sm:flex-row sm:items-center sm:justify-between">
-        <p>Rails 8 · CRuby · SQLite · Solid Queue · Hotwire · GNU R via Galaaz</p>
+      <div class="mx-auto flex max-w-6xl flex-col gap-4 px-5 py-6 text-sm text-[var(--ledger-muted)] sm:flex-row sm:items-center sm:justify-between">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+          <%= image_tag "galaaz-lockup-stacked.png",
+                alt: "Galaaz R-on-Rails",
+                class: "h-14 w-auto object-contain object-left opacity-90" %>
+          <p>Rails 8 · CRuby · SQLite · Solid Queue · Hotwire · GNU R via Galaaz</p>
+        </div>
         <p>Docs: browse in-app under <a class="underline hover:text-[var(--ledger-accent)]" href="/docs">/docs</a>
           · source in <code class="rounded bg-[var(--ledger-bg)] px-1.5 py-0.5 font-mono text-xs">docs/</code></p>
       </div>

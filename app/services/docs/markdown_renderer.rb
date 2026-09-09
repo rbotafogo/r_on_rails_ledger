@@ -7,7 +7,7 @@ module Docs
     end
 
     def render(markdown)
-      html = redcarpet.render(markdown.to_s)
+      html = engine_html(markdown.to_s)
       rewrite_doc_links(html)
     end
 
@@ -19,6 +19,16 @@ module Docs
         file = Regexp.last_match(2)
         slug = by_file[file] || file.delete_suffix(".md").tr("_", "-")
         %(href="/docs/#{slug}")
+      end
+    end
+
+    def engine_html(markdown)
+      if RUBY_ENGINE == "jruby"
+        require "kramdown"
+        require "kramdown-parser-gfm"
+        Kramdown::Document.new(markdown, input: "GFM", hard_wrap: false).to_html
+      else
+        redcarpet.render(markdown)
       end
     end
 

@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "json"
+require "tmpdir"
 require "galaaz"
 
 module Risk
@@ -89,14 +90,20 @@ module Risk
       sig = sd_return(returns_vec)
       sig = 1e-4 unless sig.finite? && sig.positive?
 
-      # Long path simulation stays in R; inputs are the Arrow-derived vector handle.
-      js = R::Support.eval(gbm_r_body(
-        x_expr: "as.numeric(#{returns_vec.r_interop})",
-        mu: mu,
-        sig: sig,
-        write_json_path: nil
-      ))
-      JSON.parse(RValues.scalar_s(js)).merge("handoff" => ArrowHandoff.local_handoff_tag)
+      # Write JSON to a tempfile — returning a large character vector through the
+      # R↔Ruby bridge truncates (~45KB on JRuby) and JSON.parse fails.
+      Dir.mktmpdir("ledger-mc-") do |dir|
+        host_out = File.join(dir, "result.json")
+        R::Support.eval(gbm_r_body(
+          x_expr: "as.numeric(#{returns_vec.r_interop})",
+          mu: mu,
+          sig: sig,
+          write_json_path: host_out
+        ))
+        raise "R engine wrote no result JSON at #{host_out}" unless File.file?(host_out)
+
+        JSON.parse(File.read(host_out)).merge("handoff" => ArrowHandoff.local_handoff_tag)
+      end
     end
 
     def remote_arrow_eval(port_returns)

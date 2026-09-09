@@ -57,7 +57,7 @@ Timed for a live click-through. Keep the browser on the portfolio page unless no
 | Time | Beat | What you say / do |
 |------|------|-------------------|
 | 0:00 | **Open** | “This is **R-on-Rails** — same one-person idea as Rails, for people whose science already lives in R. Rails → Omarchy → R-on-Rails.” |
-| 0:20 | **Stack** | “Rails 8, **CRuby**, SQLite, Solid Queue / Cable, Hotwire. No Redis, no Python workers, no React SPA.” |
+| 0:20 | **Stack** | “Rails 8, **CRuby or JRuby**, SQLite (native or JDBC), Solid Queue / Cable, Hotwire. No Redis, no Python workers, no React SPA.” |
 | 0:40 | **Data** | Point at price-bar count. “Synthetic GBM seed — `SEED_PROFILE=fast` on a laptop, `wow` for about a million bars.” |
 | 1:00 | **Click Local** | Select **Local R** → **Run stress test**. “Job enqueues; Puma stays free. Returns go to R as an **Arrow IPC file** (path on the bridge); historical VaR is Ruby calling `R.quantile` / `R.density`.” |
 | 1:30 | **Charts** | When Turbo replaces the panel: “KPI delta table — historical vs Monte Carlo — and three Plotly charts: density, paths, rolling VaR breaches.” |

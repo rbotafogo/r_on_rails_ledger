@@ -4,8 +4,17 @@ source "https://rubygems.org"
 gem "rails", "~> 8.1.3", ">= 8.1.3.1"
 # The modern asset pipeline for Rails [https://github.com/rails/propshaft]
 gem "propshaft"
-# Use sqlite3 as the database for Active Record
-gem "sqlite3", ">= 2.1"
+
+# SQLite: native C extension on CRuby / MRI; JDBC on JRuby.
+# Rails 8.1 SQLite cast_type fix: jruby/activerecord-jdbc-adapter#1225 (fork until merged).
+gem "sqlite3", ">= 2.1", platforms: :ruby
+platform :jruby do
+  gem "activerecord-jdbc-adapter", github: "k0kubun/activerecord-jdbc-adapter",
+      ref: "422254ac421bc0be56edac527789aa9bde86d55e"
+  gem "activerecord-jdbcsqlite3-adapter", github: "k0kubun/activerecord-jdbc-adapter",
+      ref: "422254ac421bc0be56edac527789aa9bde86d55e"
+end
+
 # Use the Puma web server [https://github.com/puma/puma]
 gem "puma", ">= 5.0"
 # Use JavaScript with ESM import maps [https://github.com/rails/importmap-rails]
@@ -28,14 +37,14 @@ gem "solid_cache"
 gem "solid_queue"
 gem "solid_cable"
 
-# Reduces boot times through caching; required in config/boot.rb
-gem "bootsnap", require: false
+# Reduces boot times through caching; required in config/boot.rb (CRuby).
+gem "bootsnap", require: false, platforms: :ruby
 
 # Add HTTP asset caching/compression and X-Sendfile acceleration to Puma [https://github.com/basecamp/thruster/]
-gem "thruster", require: false
+gem "thruster", require: false, platforms: :ruby
 
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
-gem "image_processing", "~> 1.2"
+gem "image_processing", "~> 1.2", platforms: :ruby
 
 # R-on-Rails: GNU R bridge (CRuby or JRuby — same gem).
 #
@@ -49,7 +58,13 @@ else
 end
 gem "msgpack" # NewBridge wire format (also a galaaz dependency)
 gem "csv"     # seeds / GBM panel generation
-gem "redcarpet" # render docs/*.md inside the app
+# ActiveSupport::JSON.decode still calls JSON.parse(str, options) positionally;
+# json 3.x requires **kwargs (breaks AR json columns on JRuby).
+gem "json", "~> 2.15"
+# Markdown for in-app docs: C extension on MRI; pure Ruby on JRuby.
+gem "redcarpet", platforms: :ruby
+gem "kramdown", platforms: :jruby
+gem "kramdown-parser-gfm", platforms: :jruby
 gem "benchmark" # seeds.rb timing; not a default gem on Ruby 3.4+/4.0
 
 group :development, :test do

@@ -2,12 +2,20 @@
 
 Standalone **Rails 8** demo of **R-on-Rails**: a family-office style portfolio stress tester.
 
-- **App runtime:** CRuby (uses the host / mise Ruby — no pinned `.ruby-version`)
+- **App runtime:** **CRuby or JRuby** (Bundler picks SQLite via `sqlite3` on MRI, JDBC on JRuby)
 - **Data / jobs / cable:** SQLite + Solid Queue + Solid Cable + Hotwire
 - **Statistics:** GNU R via the [Galaaz](https://github.com/rbotafogo/galaaz) bridge
 
 This repository is **isolated** from the Galaaz gem source tree. Open **this** project in your
 editor. Galaaz is a dependency (RubyGems by default; optional `GALAAZ_GEM_PATH` for a local checkout — see below).
+
+## Story / blog (Galaaz repo)
+
+A narrative walkthrough of this demo—Rails models, R calculators, Arrow
+handoff, and the Plotly results page—lives in the Galaaz blog:
+
+- Source: [`blogs/r_on_rails_ledger/`](https://github.com/rbotafogo/galaaz/tree/master/blogs/r_on_rails_ledger) in [galaaz](https://github.com/rbotafogo/galaaz)
+- Published renders: [rbotafogo.github.io/galaaz](https://rbotafogo.github.io/galaaz/)
 
 ## Documentation (start here)
 
@@ -23,14 +31,25 @@ Especially:
 ## Quick boot
 
 ```bash
-cd /home/rbotafogo/desenv_linux/r_on_rails_ledger
+cd /path/to/r_on_rails_ledger
+# Use either engine — Bundler installs the matching SQLite stack:
+#   mise x ruby@3.3.12 -- bundle install    # CRuby
+#   mise x ruby@jruby-10.0.3.0 -- bundle install   # JRuby
 bundle install
-make -C ../galaaz/ext/new_bridge all   # once / after bridge changes (path-gem setup)
 bin/rails db:prepare
 SEED_PROFILE=fast bin/rails db:seed    # or SEED_PROFILE=wow for ~1M rows
 bin/dev
 # open http://localhost:3000
+# logs show: [r_on_rails_ledger] Ruby engine=ruby|jruby
 ```
+
+On **JRuby**, set Galaaz JVM opens for Arrow (if you use Stage B Java):
+
+```bash
+export JAVA_OPTS="--add-opens=java.base/java.nio=ALL-UNNAMED ${JAVA_OPTS:-}"
+```
+
+`bin/dev` also installs a host Tailwind CLI under `tmp/tailwindcss-cli/` (JRuby has no gem platform binary) and sets `TAILWINDCSS_INSTALL_DIR`.
 
 ### Galaaz: path gem vs RubyGems
 

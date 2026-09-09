@@ -4,7 +4,7 @@
 
 | Dependency | Notes |
 |------------|--------|
-| **CRuby 3.3+** (host / mise latest) | No `.ruby-version` pin — on Omarchy this is whatever Install → Ruby on Rails installed. JRuby also works with Galaaz; this demo defaults to CRuby for the Rails 8 / DHH stack story. |
+| **CRuby 3.3+ or JRuby 10+** (host / mise) | Bundler selects `sqlite3` (MRI) or `activerecord-jdbcsqlite3-adapter` (JRuby). Omarchy pitch often uses CRuby; both run Galaaz. |
 | **Bundler** | Comes with RubyGems / Rails. |
 | **GNU R** | `R` and `Rscript` on `PATH`. Needed when jobs call Galaaz. |
 | **C++ toolchain** | To build Galaaz’s NewBridge gatekeeper (`make` + a C++ compiler). |
