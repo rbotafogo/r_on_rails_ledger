@@ -15,7 +15,7 @@ class CreateStressTestRuns < ActiveRecord::Migration[8.1]
       t.json :payload, default: {}
       t.timestamps
     end
-    add_index :stress_test_runs, [:stress_test_id, :engine], unique: true
+    add_index :stress_test_runs, [ :stress_test_id, :engine ], unique: true
 
     change_table :stress_tests do |t|
       t.integer :wall_elapsed_ms

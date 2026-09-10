@@ -67,7 +67,7 @@ module Risk
       end
       hist_t.join
       mc_t.join
-      [historical, monte_carlo, errors]
+      [ historical, monte_carlo, errors ]
     end
 
     def run_docker

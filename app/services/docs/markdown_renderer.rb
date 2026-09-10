@@ -14,7 +14,7 @@ module Docs
     private
 
     def rewrite_doc_links(html)
-      by_file = Docs::Catalog.all.to_h { |p| [p.filename, p.slug] }
+      by_file = Docs::Catalog.all.to_h { |p| [ p.filename, p.slug ] }
       html.gsub(%r{href="(\./)?([^"/]+\.md)"}) do
         file = Regexp.last_match(2)
         slug = by_file[file] || file.delete_suffix(".md").tr("_", "-")

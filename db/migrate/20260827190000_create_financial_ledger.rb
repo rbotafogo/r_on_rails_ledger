@@ -12,7 +12,7 @@ class CreateFinancialLedger < ActiveRecord::Migration[8.1]
       t.decimal :weight, precision: 8, scale: 6, null: false
       t.timestamps
     end
-    add_index :assets, [:portfolio_id, :ticker], unique: true
+    add_index :assets, [ :portfolio_id, :ticker ], unique: true
 
     create_table :historical_prices do |t|
       t.references :asset, null: false, foreign_key: true
@@ -21,7 +21,7 @@ class CreateFinancialLedger < ActiveRecord::Migration[8.1]
       t.float :daily_return
       t.integer :volume
     end
-    add_index :historical_prices, [:asset_id, :traded_at]
+    add_index :historical_prices, [ :asset_id, :traded_at ]
 
     create_table :stress_tests do |t|
       t.references :portfolio, null: false, foreign_key: true
@@ -34,6 +34,6 @@ class CreateFinancialLedger < ActiveRecord::Migration[8.1]
       t.json :chart_payload, default: {}
       t.timestamps
     end
-    add_index :stress_tests, [:portfolio_id, :created_at]
+    add_index :stress_tests, [ :portfolio_id, :created_at ]
   end
 end

@@ -1,0 +1,22 @@
+{
+  "ignored_warnings": [
+    {
+      "fingerprint": "6ea6f3e3e4d326f5229934e503cc6ca99387f9b2a0f39bee44720418ba47f252",
+      "note": "Intentional Galaaz R::Support.eval for Monte Carlo GBM; expressions are built from numeric panel data."
+    },
+    {
+      "fingerprint": "79f947e1c9b5d5386c6d086f34fb5d3a1e3e2d23b3358c405e564ea451998ea7",
+      "note": "Intentional Galaaz R::Support.eval for one-shot R JSON jobs with developer-authored scripts."
+    },
+    {
+      "fingerprint": "bbeb8666d661079af5ddf194d9f98e856dedfd988c24164ed77c1c10fccc5d78",
+      "note": "Docs HTML is rendered from a fixed in-repo markdown catalog; params[:id] only selects a known slug."
+    },
+    {
+      "fingerprint": "cd9fe51826253783ac5afc381bbe051cdb8c0911a33f654286d68eae53ae3213",
+      "note": "Docker image tags are fixed allowlisted constants (galaaz/r-bridge:*), not user input."
+    }
+  ],
+  "updated": "2026-09-10 15:47:30 +0000",
+  "brakeman_version": "8.0.6"
+}

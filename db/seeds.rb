@@ -9,11 +9,11 @@ require "benchmark"
 
 profile = ENV.fetch("SEED_PROFILE", "fast")
 num_steps = case profile
-            when "wow" then 100_000
-            when "fast" then 2_000
-            else
+when "wow" then 100_000
+when "fast" then 2_000
+else
               Integer(ENV.fetch("SEED_STEPS", "2000"))
-            end
+end
 
 puts "== Seeding Financial Ledger (profile=#{profile}, steps/asset=#{num_steps}) =="
 
@@ -56,7 +56,7 @@ time = Benchmark.realtime do
     standard_normal = lambda do
       u1 = rand
       u2 = rand
-      Math.sqrt(-2.0 * Math.log([u1, 1e-15].max)) * Math.cos(2.0 * Math::PI * u2)
+      Math.sqrt(-2.0 * Math.log([ u1, 1e-15 ].max)) * Math.cos(2.0 * Math::PI * u2)
     end
 
     # Intraday-ish bars: 1-minute steps ending "now" (not step.days for 100k).

@@ -138,7 +138,7 @@ module Risk
 
         window = returns[(i + 1 - WINDOW)..i]
         sorted = window.sort
-        idx = [((WINDOW - 1) * 0.05).floor, 0].max
+        idx = [ ((WINDOW - 1) * 0.05).floor, 0 ].max
         var_level = sorted[idx]
         point = {
           "t" => times[i],

@@ -59,7 +59,7 @@ module Risk
     # Arrow Table → numeric vector of daily_return (still an R handle).
     def to_returns_numeric(port_returns)
       tbl = to_returns_table(port_returns)
-      R.as__numeric(R.dplyr___collect(tbl)[["daily_return"]])
+      R.as__numeric(R.dplyr___collect(tbl)[[ "daily_return" ]])
     end
 
     # Kernel density x/y for Plotly. Prefer Stage B2 (R writes IPC, Ruby reads) when the
@@ -172,7 +172,7 @@ module Risk
         FileUtils.mv(tmp_ipc, host_ipc)
       end
 
-      scan_tmp = Tempfile.new(["ledger_returns", ".txt"])
+      scan_tmp = Tempfile.new([ "ledger_returns", ".txt" ])
       port_returns.each { |v| scan_tmp.puts(v) }
       scan_tmp.flush
 

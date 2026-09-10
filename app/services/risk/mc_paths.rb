@@ -4,7 +4,7 @@ module Risk
   # Choose Monte Carlo path counts from free RAM and UI input.
   # Prefer refusing an unsafe N with a clear message over letting R OOM / close the bridge.
   module McPaths
-    PRESETS = [100, 200, 500, 1_000, 2_000, 5_000].freeze
+    PRESETS = [ 100, 200, 500, 1_000, 2_000, 5_000 ].freeze
 
     # Conservative bytes/path for GBM matrix + R overhead (horizon ≈ 30).
     BYTES_PER_PATH = 8 * 30 * 8
@@ -48,7 +48,7 @@ module Risk
       return 5_000 if kib <= 0
 
       usable = (kib * 1024) / 4
-      [[usable / BYTES_PER_PATH, 100].max, 50_000].min
+      [ [ usable / BYTES_PER_PATH, 100 ].max, 50_000 ].min
     end
 
     # Resolve UI/ENV request; raise InsufficientMemory if clearly too large.
@@ -69,7 +69,7 @@ module Risk
       env = ENV["MC_SAMPLE_PATHS"].presence&.to_i
       return env if env&.positive?
 
-      [[n_paths / 10, 100].min, 20].max
+      [ [ n_paths / 10, 100 ].min, 20 ].max
     end
 
     # Map bridge/R death into a user-facing memory hint.
@@ -77,7 +77,7 @@ module Risk
       msg = error.message.to_s
       return error unless msg.match?(/connection closed|no RET|timeout|RProcessError|failed to accept/i)
 
-      hint = [suggested_default, (n_paths / 4)].min
+      hint = [ suggested_default, (n_paths / 4) ].min
       hint = 100 if hint < 100
       InsufficientMemory.new(
         "Monte Carlo failed with #{n_paths} paths (R closed or timed out — often low memory). " \

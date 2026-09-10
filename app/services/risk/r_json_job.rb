@@ -29,7 +29,7 @@ module Risk
         by_time[row["traded_at"]] += row["daily_return"].to_f * row["weight"].to_f
       end
       times = by_time.keys.sort
-      [times, times.map { |t| by_time[t] }]
+      [ times, times.map { |t| by_time[t] } ]
     end
 
     def eval_r!(code, eval: nil)

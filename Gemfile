@@ -50,11 +50,13 @@ gem "image_processing", "~> 1.2", platforms: :ruby
 #
 # Default: published gem from RubyGems.
 # Optional local checkout: GALAAZ_GEM_PATH=/path/to/galaaz bundle install
+# require: false — boot Rails without spawning GNU R (CI / importmap / empty tests).
+# Risk engines still `require "galaaz"` when they run.
 galaaz_path = ENV["GALAAZ_GEM_PATH"].to_s
 if !galaaz_path.empty? && Dir.exist?(galaaz_path)
-  gem "galaaz", path: galaaz_path
+  gem "galaaz", path: galaaz_path, require: false
 else
-  gem "galaaz"
+  gem "galaaz", require: false
 end
 gem "msgpack" # NewBridge wire format (also a galaaz dependency)
 gem "csv"     # seeds / GBM panel generation
